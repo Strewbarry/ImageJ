@@ -7,6 +7,8 @@
 #include "ImageJ2Dlg.h"
 #include "afxdialogex.h"
 
+using namespace std;
+using namespace cv;
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
@@ -65,6 +67,7 @@ BEGIN_MESSAGE_MAP(CImageJ2Dlg, CDialogEx)
 	ON_WM_SYSCOMMAND()
 	ON_WM_PAINT()
 	ON_WM_QUERYDRAGICON()
+	ON_COMMAND(ID_FILE_OPEN32771, &CImageJ2Dlg::OnFileOpen32771)
 END_MESSAGE_MAP()
 
 
@@ -153,3 +156,22 @@ HCURSOR CImageJ2Dlg::OnQueryDragIcon()
 	return static_cast<HCURSOR>(m_hIcon);
 }
 
+
+void CImageJ2Dlg::OnFileOpen32771()
+{
+	// TODO: 여기에 명령 처리기 코드를 추가합니다.
+	TCHAR szFile[] = _T("모든파일(*.*)|*.*||");
+
+	CFileDialog dlg(TRUE, NULL, NULL, OFN_HIDEREADONLY, szFile);
+
+	if (IDOK == dlg.DoModal())
+	{
+		CString pathName = dlg.GetPathName();
+		string cvstr = CT2A(pathName);
+
+		Mat image = imread(cvstr);
+
+		imshow(cvstr, image);
+
+	}
+}
