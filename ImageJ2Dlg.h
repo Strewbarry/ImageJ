@@ -36,6 +36,7 @@ protected:
 	afx_msg HCURSOR OnQueryDragIcon();
 	DECLARE_MESSAGE_MAP()
 public:
+	void OpenPicture(cv::Mat ma);
 	afx_msg void OnFileOpen32771();
 	CStatic m_PicCtrl;
 };

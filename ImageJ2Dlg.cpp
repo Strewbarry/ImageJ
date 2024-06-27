@@ -65,6 +65,7 @@ CImageJ2Dlg::CImageJ2Dlg(CWnd* pParent /*=NULL*/)
 void CImageJ2Dlg::DoDataExchange(CDataExchange* pDX)
 {
 	CDialogEx::DoDataExchange(pDX);
+	//  DDX_Control(pDX, IDC_PICTURE, m_PicCtrl);
 	DDX_Control(pDX, IDC_PICTURE, m_PicCtrl);
 }
 
@@ -161,6 +162,18 @@ HCURSOR CImageJ2Dlg::OnQueryDragIcon()
 	return static_cast<HCURSOR>(m_hIcon);
 }
 
+void CImageJ2Dlg::OpenPicture(Mat ma){
+	CRect rect;//픽쳐 컨트롤의 크기를 저장할 CRect 객체
+	m_PicCtrl.GetWindowRect(rect);//GetWindowRect를 사용해서 픽쳐 컨트롤의 크기를 받는다.
+	CDC* dc; //픽쳐 컨트롤의 DC를 가져올  CDC 포인터
+	dc = m_PicCtrl.GetDC(); //픽쳐 컨트롤의 DC를 얻는다.
+	CImage image;//불러오고 싶은 이미지를 로드할 CImage 
+	CString cStr(cvstr.c_str());
+	image.Load(cStr);//이미지 로드
+
+	image.StretchBlt(dc->m_hDC, 0, 0, rect.Width(), rect.Height(), SRCCOPY);//이미지를 픽쳐 컨트롤 크기로 조정
+	ReleaseDC(dc);//DC 해제
+}
 
 void CImageJ2Dlg::OnFileOpen32771()
 {
@@ -175,7 +188,8 @@ void CImageJ2Dlg::OnFileOpen32771()
 		cvstr = CT2A(pathName);
 		Inputimage = imread(cvstr);
 
-		imshow(cvstr, Inputimage);
+		//imshow(cvstr, Inputimage);
+		OpenPicture(Inputimage);
 
 	}
 }
