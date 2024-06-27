@@ -14,6 +14,9 @@ using namespace cv;
 #define new DEBUG_NEW
 #endif
 
+CString pathName;
+string cvstr;
+Mat Inputimage;
 
 // 응용 프로그램 정보에 사용되는 CAboutDlg 대화 상자입니다.
 
@@ -61,6 +64,7 @@ CImageJ2Dlg::CImageJ2Dlg(CWnd* pParent /*=NULL*/)
 void CImageJ2Dlg::DoDataExchange(CDataExchange* pDX)
 {
 	CDialogEx::DoDataExchange(pDX);
+	DDX_Control(pDX, IDC_PICTURE, m_PicCtrl);
 }
 
 BEGIN_MESSAGE_MAP(CImageJ2Dlg, CDialogEx)
@@ -166,12 +170,11 @@ void CImageJ2Dlg::OnFileOpen32771()
 
 	if (IDOK == dlg.DoModal())
 	{
-		CString pathName = dlg.GetPathName();
-		string cvstr = CT2A(pathName);
+		pathName = dlg.GetPathName();
+		cvstr = CT2A(pathName);
+		Inputimage = imread(cvstr);
 
-		Mat image = imread(cvstr);
-
-		imshow(cvstr, image);
+		imshow(cvstr, Inputimage);
 
 	}
 }

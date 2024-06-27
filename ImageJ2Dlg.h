@@ -7,6 +7,7 @@
 #include <opencv2/opencv.hpp>
 #include <opencv2/highgui/highgui.hpp>
 #include <opencv2/imgproc/imgproc.hpp>
+#include "afxwin.h"
 
 // CImageJ2Dlg 대화 상자
 class CImageJ2Dlg : public CDialogEx
@@ -36,4 +37,5 @@ protected:
 	DECLARE_MESSAGE_MAP()
 public:
 	afx_msg void OnFileOpen32771();
+	CStatic m_PicCtrl;
 };
