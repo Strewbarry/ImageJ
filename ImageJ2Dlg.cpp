@@ -18,6 +18,7 @@ using namespace cv;
 CString pathName;
 string cvstr;
 Mat Inputimage;
+CImage cimage;
 
 // 응용 프로그램 정보에 사용되는 CAboutDlg 대화 상자입니다.
 
@@ -162,6 +163,7 @@ HCURSOR CImageJ2Dlg::OnQueryDragIcon()
 {
 	return static_cast<HCURSOR>(m_hIcon);
 }
+
 void CImageJ2Dlg::MatToCImage(const cv::Mat& mat, CImage& cimage)
 {
 	if (mat.empty()) return;
@@ -200,7 +202,6 @@ void CImageJ2Dlg::OpenPicture(Mat ma){
 	m_PicCtrl.GetWindowRect(rect);//GetWindowRect를 사용해서 픽쳐 컨트롤의 크기를 받는다.
 	CDC* dc; //픽쳐 컨트롤의 DC를 가져올  CDC 포인터
 	dc = m_PicCtrl.GetDC(); //픽쳐 컨트롤의 DC를 얻는다.
-	CImage cimage;
 
 	MatToCImage(ma, cimage);
 
@@ -231,4 +232,8 @@ void CImageJ2Dlg::OnFileOpen32771()
 void CImageJ2Dlg::OnConvertcolorGrayscale()
 {
 	// TODO: 여기에 명령 처리기 코드를 추가합니다.
+	Mat grayImage;
+	cvtColor(Inputimage, grayImage, COLOR_BGR2GRAY);
+	//imshow(cvstr, grayImage);
+	OpenPicture(grayImage);
 }
