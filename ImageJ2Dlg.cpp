@@ -21,6 +21,7 @@ Mat Inputimage;
 CImage cimage;
 Mat rImage;
 Mat nowImage;
+double m_scale;
 
 // 응용 프로그램 정보에 사용되는 CAboutDlg 대화 상자입니다.
 
@@ -92,6 +93,7 @@ BEGIN_MESSAGE_MAP(CImageJ2Dlg, CDialogEx)
 	ON_WM_LBUTTONUP()
 	ON_COMMAND(ID_LINE_DRAG, &CImageJ2Dlg::OnLineDrag)
 	ON_COMMAND(ID_LINE_CLICKTWICE, &CImageJ2Dlg::OnLineClicktwice)
+	ON_WM_MOUSEWHEEL()
 END_MESSAGE_MAP()
 
 
@@ -127,6 +129,7 @@ BOOL CImageJ2Dlg::OnInitDialog()
 	SetIcon(m_hIcon, FALSE);		// 작은 아이콘을 설정합니다.
 
 	// TODO: 여기에 추가 초기화 작업을 추가합니다.
+	m_scale = 1;
 
 	return TRUE;  // 포커스를 컨트롤에 설정하지 않으면 TRUE를 반환합니다.
 }
@@ -221,7 +224,7 @@ void CImageJ2Dlg::OpenPicture(Mat ma){
 
 	MatToCImage(ma, cimage);
 
-	cimage.StretchBlt(dc->m_hDC, 0, 0, rect.Width(), rect.Height(), SRCCOPY);
+	cimage.StretchBlt(dc->m_hDC, 0, 0, cimage.GetWidth(), cimage.GetWidth(), SRCCOPY);
 	ReleaseDC(dc);//DC 해제
 }
 
@@ -413,11 +416,8 @@ void CImageJ2Dlg::OnLButtonDown(UINT nFlags, CPoint point)
 	if (m_DrawMode == "LineDrag") {
 		nSx = point.x;
 		nSy = point.y;	}
-
-
 	CDialogEx::OnLButtonDown(nFlags, point);
 }
-
 
 void CImageJ2Dlg::OnLButtonUp(UINT nFlags, CPoint point)
 {
@@ -465,4 +465,32 @@ void CImageJ2Dlg::OnLineClicktwice()
 		m_DrawMode = "LineClick";
 	else
 		m_DrawMode = "";
+}
+
+void CImageJ2Dlg::ZoomImage(double scale)
+{
+	if (nowImage.empty()) return;
+
+	Mat resizedImage;
+	resize(nowImage, resizedImage, Size(), scale, scale, INTER_LINEAR);
+
+	// Display the resized image
+	OpenPicture(resizedImage);
+}
+
+BOOL CImageJ2Dlg::OnMouseWheel(UINT nFlags, short zDelta, CPoint pt)
+{
+	// TODO: 여기에 메시지 처리기 코드를 추가 및/또는 기본값을 호출합니다.
+	if (zDelta > 0)
+	{
+		m_scale *= 1.1; // 휠 위로 스크롤하면 확대
+	}
+	else
+	{
+		m_scale /= 1.1; // 휠 아래로 스크롤하면 축소
+	}
+
+	ZoomImage(m_scale);
+
+	return CDialogEx::OnMouseWheel(nFlags, zDelta, pt);
 }

@@ -56,4 +56,6 @@ public:
 	bool nClickFlag;
 	afx_msg void OnLineDrag();
 	afx_msg void OnLineClicktwice();
+	afx_msg BOOL OnMouseWheel(UINT nFlags, short zDelta, CPoint pt);
+	void ZoomImage(double scale);
 };
