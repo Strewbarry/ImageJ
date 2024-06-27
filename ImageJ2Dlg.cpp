@@ -64,6 +64,7 @@ CImageJ2Dlg::CImageJ2Dlg(CWnd* pParent /*=NULL*/)
 	, m_DrawMode(_T(""))
 	, nSx(0)
 	, nSy(0)
+	, nClickFlag(false)
 {
 	m_hIcon = AfxGetApp()->LoadIcon(IDR_MAINFRAME);
 }
@@ -374,10 +375,6 @@ void CImageJ2Dlg::OnDrawLine()
 void CImageJ2Dlg::OnLButtonDown(UINT nFlags, CPoint point)
 {
 	// TODO: 여기에 메시지 처리기 코드를 추가 및/또는 기본값을 호출합니다.
-	if (m_DrawMode == 'L') {
-		nSx = point.x;
-		nSy = point.y;
-	}
 
 	CDialogEx::OnLButtonDown(nFlags, point);
 }
@@ -387,13 +384,21 @@ void CImageJ2Dlg::OnLButtonUp(UINT nFlags, CPoint point)
 {
 	// TODO: 여기에 메시지 처리기 코드를 추가 및/또는 기본값을 호출합니다.
 	if (m_DrawMode == 'L') {
-		CClientDC dc(this);
-		CPen pEn;
-		pEn.CreatePen(PS_SOLID, 3, RGB(0, 0, 0));
-		dc.SelectObject(&pEn);
+		if (nClickFlag == 0) {
+			nSx = point.x;
+			nSy = point.y;
+			nClickFlag = 1;
+		}
+		else {
+			CClientDC dc(this);
+			CPen pEn;
+			pEn.CreatePen(PS_SOLID, 3, RGB(0, 0, 0));
+			dc.SelectObject(&pEn);
 
-		dc.MoveTo(nSx, nSy);
-		dc.LineTo(point.x, point.y);
+			dc.MoveTo(nSx, nSy);
+			dc.LineTo(point.x, point.y);
+			nClickFlag = 0;
+		}
 	}
 
 	CDialogEx::OnLButtonUp(nFlags, point);

@@ -54,4 +54,5 @@ public:
 	afx_msg void OnLButtonUp(UINT nFlags, CPoint point);
 	int nSx;
 	int nSy;
+	bool nClickFlag;
 };
