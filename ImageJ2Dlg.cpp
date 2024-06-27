@@ -20,6 +20,7 @@ string cvstr;
 Mat Inputimage;
 CImage cimage;
 Mat rImage;
+Mat nowImage;
 
 // 응용 프로그램 정보에 사용되는 CAboutDlg 대화 상자입니다.
 
@@ -79,6 +80,8 @@ BEGIN_MESSAGE_MAP(CImageJ2Dlg, CDialogEx)
 	ON_COMMAND(ID_CONVERTCOLOR_GRAYSCALE, &CImageJ2Dlg::OnConvertcolorGrayscale)
 	ON_COMMAND(ID_EDIT_BLUR, &CImageJ2Dlg::OnEditBlur)
 	ON_COMMAND(ID_EDIT_ROTATE, &CImageJ2Dlg::OnEditRotate)
+	ON_COMMAND(ID_FILE_SAVE32772, &CImageJ2Dlg::OnFileSave32772)
+	ON_COMMAND(ID_FILE_SAVEAS, &CImageJ2Dlg::OnFileSaveas)
 END_MESSAGE_MAP()
 
 
@@ -230,6 +233,7 @@ void CImageJ2Dlg::OnFileOpen32771()
 
 	}
 	rImage = Inputimage;
+	nowImage = Inputimage;
 }
 
 
@@ -241,6 +245,7 @@ void CImageJ2Dlg::OnConvertcolorGrayscale()
 		cvtColor(Inputimage, grayImage, COLOR_BGR2GRAY);
 		//imshow(cvstr, grayImage);
 		OpenPicture(grayImage);
+		nowImage = grayImage;
 	}
 	else
 		MessageBox(_T("이미지를 먼저 로드해주세요"), _T("alert"), NULL);
@@ -254,6 +259,7 @@ void CImageJ2Dlg::OnEditBlur()
 		Mat BlurImage;
 		GaussianBlur(Inputimage, BlurImage, Size(7, 7), 0);
 		OpenPicture(BlurImage);
+		nowImage = BlurImage;
 	}
 	else
 		MessageBox(_T("이미지를 먼저 로드해주세요"), _T("alert"), NULL);
@@ -278,7 +284,30 @@ void CImageJ2Dlg::OnEditRotate()
 	OpenPicture(rotatedImage);
 
 	rImage = rotatedImage;
+	nowImage = rImage;
 
-	// 회전된 이미지 저장
-	//imwrite("output_rotated.jpg", rotatedImage);
+}
+
+
+void CImageJ2Dlg::OnFileSave32772()
+{
+	// TODO: 여기에 명령 처리기 코드를 추가합니다.
+	imwrite(cvstr, nowImage);
+}
+
+
+void CImageJ2Dlg::OnFileSaveas()
+{
+	// TODO: 여기에 명령 처리기 코드를 추가합니다.
+	TCHAR szFile[] = _T("모든파일(*.*)|*.*||");
+	CString outFileName;
+	AfxExtractSubString(outFileName, pathName, 1, '.');
+
+	CFileDialog dlg(FALSE, NULL, '.' + outFileName, OFN_OVERWRITEPROMPT, szFile);
+	if (IDOK == dlg.DoModal())
+	{
+		CString saveFilePath = dlg.GetPathName();
+		string svstr = CT2A(saveFilePath);
+		imwrite(svstr, nowImage);
+	}
 }

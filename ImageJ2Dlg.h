@@ -43,4 +43,6 @@ public:
 	afx_msg void OnConvertcolorGrayscale();
 	afx_msg void OnEditBlur();
 	afx_msg void OnEditRotate();
+	afx_msg void OnFileSave32772();
+	afx_msg void OnFileSaveas();
 };
