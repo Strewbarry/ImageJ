@@ -37,6 +37,7 @@ protected:
 	DECLARE_MESSAGE_MAP()
 public:
 	void OpenPicture(cv::Mat ma);
+	void OpenPicture(CImage ma);
 	void MatToCImage(const cv::Mat& mat, CImage& cimage);
 	afx_msg void OnFileOpen32771();
 	CStatic m_PicCtrl;
@@ -44,7 +45,9 @@ public:
 	afx_msg void OnEditBlur();
 	afx_msg void OnEditRotate();
 	afx_msg void OnFileSave32772();
-	afx_msg void OnFileSaveas();
+	afx_msg
+	void Capture(CImage& image);
+	void OnFileSaveas();
 	afx_msg void OnFlipLrfilp();
 	afx_msg void OnFlipUd();
 	afx_msg void OnEditReverse();

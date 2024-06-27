@@ -19,6 +19,7 @@ CString pathName;
 string cvstr;
 Mat Inputimage;
 CImage cimage;
+CImage original;
 Mat rImage;
 Mat nowImage;
 double m_scale;
@@ -221,6 +222,7 @@ void CImageJ2Dlg::MatToCImage(const cv::Mat& mat, CImage& cimage)
 }
 
 void CImageJ2Dlg::OpenPicture(Mat ma){
+
 	CRect rect;//픽쳐 컨트롤의 크기를 저장할 CRect 객체
 	m_PicCtrl.GetWindowRect(rect);//GetWindowRect를 사용해서 픽쳐 컨트롤의 크기를 받는다.
 	CDC* dc; //픽쳐 컨트롤의 DC를 가져올  CDC 포인터
@@ -232,8 +234,20 @@ void CImageJ2Dlg::OpenPicture(Mat ma){
 	ReleaseDC(dc);//DC 해제
 }
 
+void CImageJ2Dlg::OpenPicture(CImage ma) {
+
+	CRect rect;
+	m_PicCtrl.GetWindowRect(rect);
+	CDC* dc; 
+	dc = m_PicCtrl.GetDC(); 
+
+	ma.StretchBlt(dc->m_hDC, nPicX, nPicY, ma.GetWidth(), ma.GetWidth(), SRCCOPY);
+	ReleaseDC(dc);
+}
+
 void CImageJ2Dlg::OnFileOpen32771()
 {
+	Capture(original);
 	// TODO: 여기에 명령 처리기 코드를 추가합니다.
 	TCHAR szFile[] = _T("모든파일(*.*)|*.*||");
 
@@ -318,37 +332,42 @@ void CImageJ2Dlg::OnFileSave32772()
 		MessageBox(_T("이미지를 먼저 로드해주세요"), _T("alert"), NULL);
 }
 
+void CImageJ2Dlg::Capture(CImage &e) {
+	CRect rect;
+	GetClientRect(&rect);
+
+	// 클라이언트 영역의 크기를 가져옵니다.
+	int width = rect.Width();
+	int height = rect.Height();
+
+	// 클라이언트 DC와 메모리 DC를 생성합니다.
+	CDC* pDC = GetDC();
+	CDC memDC;
+	memDC.CreateCompatibleDC(pDC);
+
+	// 비트맵을 생성하고 메모리 DC에 선택합니다.
+	CBitmap bmp;
+	bmp.CreateCompatibleBitmap(pDC, width, height);
+	CBitmap* pOldBmp = memDC.SelectObject(&bmp);
+
+	// 클라이언트 DC의 내용을 메모리 DC로 복사합니다.
+	memDC.BitBlt(0, 0, width, height, pDC, 0, 0, SRCCOPY);
+
+	// CImage 객체를 생성하고 비트맵을 붙여넣습니다.
+	
+	e.Attach((HBITMAP)bmp.Detach());
+
+	// 다이얼로그 캡처 후 해제
+	memDC.SelectObject(pOldBmp);
+	ReleaseDC(pDC);
+}
+
 
 void CImageJ2Dlg::OnFileSaveas()
 {
 	if (!nowImage.empty()) {
-		CRect rect;
-		GetClientRect(&rect);
-
-		// 클라이언트 영역의 크기를 가져옵니다.
-		int width = rect.Width();
-		int height = rect.Height();
-
-		// 클라이언트 DC와 메모리 DC를 생성합니다.
-		CDC* pDC = GetDC();
-		CDC memDC;
-		memDC.CreateCompatibleDC(pDC);
-
-		// 비트맵을 생성하고 메모리 DC에 선택합니다.
-		CBitmap bmp;
-		bmp.CreateCompatibleBitmap(pDC, width, height);
-		CBitmap* pOldBmp = memDC.SelectObject(&bmp);
-
-		// 클라이언트 DC의 내용을 메모리 DC로 복사합니다.
-		memDC.BitBlt(0, 0, width, height, pDC, 0, 0, SRCCOPY);
-
-		// CImage 객체를 생성하고 비트맵을 붙여넣습니다.
-		CImage image;
-		image.Attach((HBITMAP)bmp.Detach());
-
-		// 다이얼로그 캡처 후 해제
-		memDC.SelectObject(pOldBmp);
-		ReleaseDC(pDC);
+		CImage saveImage;
+		Capture(saveImage);
 
 		CString szFile = _T("JPEG Files(*.jpg)|*.jpg|PNG Files(*.png)|*.png|All Files(*.*)|*.*||");
 		CFileDialog fileDlg(FALSE, NULL, _T("dialog_capture"), OFN_OVERWRITEPROMPT, szFile);
@@ -357,7 +376,7 @@ void CImageJ2Dlg::OnFileSaveas()
 			CString saveFilePath = fileDlg.GetPathName();
 
 			// CImage 객체를 파일로 저장
-			HRESULT hr = image.Save(saveFilePath);
+			HRESULT hr = saveImage.Save(saveFilePath);
 
 			if (FAILED(hr)) {
 				AfxMessageBox(_T("Error: Failed to save image!"));
@@ -513,7 +532,8 @@ void CImageJ2Dlg::OnMButtonUp(UINT nFlags, CPoint point)
 	// TODO: 여기에 메시지 처리기 코드를 추가 및/또는 기본값을 호출합니다.
 	nPicX = point.x;
 	nPicY = point.y;
-	//OpenPicture(nowImage);
+	OpenPicture(original);
+	OpenPicture(nowImage);
 
 	CDialogEx::OnMButtonUp(nFlags, point);
 }
