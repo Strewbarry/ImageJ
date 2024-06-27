@@ -74,6 +74,7 @@ BEGIN_MESSAGE_MAP(CImageJ2Dlg, CDialogEx)
 	ON_WM_PAINT()
 	ON_WM_QUERYDRAGICON()
 	ON_COMMAND(ID_FILE_OPEN32771, &CImageJ2Dlg::OnFileOpen32771)
+	ON_COMMAND(ID_CONVERTCOLOR_GRAYSCALE, &CImageJ2Dlg::OnConvertcolorGrayscale)
 END_MESSAGE_MAP()
 
 
@@ -161,17 +162,49 @@ HCURSOR CImageJ2Dlg::OnQueryDragIcon()
 {
 	return static_cast<HCURSOR>(m_hIcon);
 }
+void CImageJ2Dlg::MatToCImage(const cv::Mat& mat, CImage& cimage)
+{
+	if (mat.empty()) return;
+
+	int width = mat.cols;
+	int height = mat.rows;
+	int channels = mat.channels();
+	int step = mat.step;
+
+	// 비트맵 정보 설정
+	BITMAPINFO bmi;
+	memset(&bmi, 0, sizeof(bmi));
+	bmi.bmiHeader.biSize = sizeof(BITMAPINFOHEADER);
+	bmi.bmiHeader.biWidth = width;
+	bmi.bmiHeader.biHeight = -height; // top-down DIB
+	bmi.bmiHeader.biPlanes = 1;
+	bmi.bmiHeader.biBitCount = channels * 8;
+	bmi.bmiHeader.biCompression = BI_RGB;
+	bmi.bmiHeader.biSizeImage = step * height;
+
+	// CImage 초기화
+	cimage.Destroy();
+	cimage.Create(width, height, channels * 8);
+
+	// CImage에 데이터 복사
+	BYTE* dst = (BYTE*)cimage.GetBits();
+	const BYTE* src = mat.data;
+	for (int y = 0; y < height; y++)
+	{
+		memcpy(dst + y * cimage.GetPitch(), src + y * step, width * channels);
+	}
+}
 
 void CImageJ2Dlg::OpenPicture(Mat ma){
 	CRect rect;//픽쳐 컨트롤의 크기를 저장할 CRect 객체
 	m_PicCtrl.GetWindowRect(rect);//GetWindowRect를 사용해서 픽쳐 컨트롤의 크기를 받는다.
 	CDC* dc; //픽쳐 컨트롤의 DC를 가져올  CDC 포인터
 	dc = m_PicCtrl.GetDC(); //픽쳐 컨트롤의 DC를 얻는다.
-	CImage image;//불러오고 싶은 이미지를 로드할 CImage 
-	CString cStr(cvstr.c_str());
-	image.Load(cStr);//이미지 로드
+	CImage cimage;
 
-	image.StretchBlt(dc->m_hDC, 0, 0, rect.Width(), rect.Height(), SRCCOPY);//이미지를 픽쳐 컨트롤 크기로 조정
+	MatToCImage(ma, cimage);
+
+	cimage.StretchBlt(dc->m_hDC, 0, 0, rect.Width(), rect.Height(), SRCCOPY);
 	ReleaseDC(dc);//DC 해제
 }
 
@@ -192,4 +225,10 @@ void CImageJ2Dlg::OnFileOpen32771()
 		OpenPicture(Inputimage);
 
 	}
+}
+
+
+void CImageJ2Dlg::OnConvertcolorGrayscale()
+{
+	// TODO: 여기에 명령 처리기 코드를 추가합니다.
 }

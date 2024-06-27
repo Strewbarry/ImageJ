@@ -37,6 +37,8 @@ protected:
 	DECLARE_MESSAGE_MAP()
 public:
 	void OpenPicture(cv::Mat ma);
+	void MatToCImage(const cv::Mat& mat, CImage& cimage);
 	afx_msg void OnFileOpen32771();
 	CStatic m_PicCtrl;
+	afx_msg void OnConvertcolorGrayscale();
 };
