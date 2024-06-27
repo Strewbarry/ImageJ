@@ -6,6 +6,7 @@
 #include "ImageJ2.h"
 #include "ImageJ2Dlg.h"
 #include "afxdialogex.h"
+#include "resource.h"
 
 using namespace std;
 using namespace cv;
