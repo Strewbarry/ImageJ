@@ -72,7 +72,6 @@ CImageJ2Dlg::CImageJ2Dlg(CWnd* pParent /*=NULL*/)
 void CImageJ2Dlg::DoDataExchange(CDataExchange* pDX)
 {
 	CDialogEx::DoDataExchange(pDX);
-	//  DDX_Control(pDX, IDC_PICTURE, m_PicCtrl);
 	DDX_Control(pDX, IDC_PICTURE, m_PicCtrl);
 }
 
@@ -89,9 +88,10 @@ BEGIN_MESSAGE_MAP(CImageJ2Dlg, CDialogEx)
 	ON_COMMAND(ID_FLIP_LRFILP, &CImageJ2Dlg::OnFlipLrfilp)
 	ON_COMMAND(ID_FLIP_UD, &CImageJ2Dlg::OnFlipUd)
 	ON_COMMAND(ID_EDIT_REVERSE, &CImageJ2Dlg::OnEditReverse)
-	ON_COMMAND(ID_DRAW_LINE, &CImageJ2Dlg::OnDrawLine)
 	ON_WM_LBUTTONDOWN()
 	ON_WM_LBUTTONUP()
+	ON_COMMAND(ID_LINE_DRAG, &CImageJ2Dlg::OnLineDrag)
+	ON_COMMAND(ID_LINE_CLICKTWICE, &CImageJ2Dlg::OnLineClicktwice)
 END_MESSAGE_MAP()
 
 
@@ -278,45 +278,58 @@ void CImageJ2Dlg::OnEditBlur()
 void CImageJ2Dlg::OnEditRotate()
 {
 	// TODO: 여기에 명령 처리기 코드를 추가합니다.
-	int height = nowImage.rows;
-	int width = nowImage.cols;
+	if (!nowImage.empty()) {
 
-	// 회전 중심점 및 각도 설정
-	Point2f center(static_cast<float>(width / 2), static_cast<float>(height / 2));
-	double angle = 90.0;  // 90도 회전
+		int height = nowImage.rows;
+		int width = nowImage.cols;
 
-	// 회전 변환 매트릭스 계산
-	Mat rotMatrix = getRotationMatrix2D(center, angle, 1.0);  // 1.0은 스케일 매개변수입니다.
+		// 회전 중심점 및 각도 설정
+		Point2f center(static_cast<float>(width / 2), static_cast<float>(height / 2));
+		double angle = 90.0;  // 90도 회전
 
-	Mat rotatedImage;
-	warpAffine(nowImage, rotatedImage, rotMatrix, Size(width, height));
-	OpenPicture(rotatedImage);
+		// 회전 변환 매트릭스 계산
+		Mat rotMatrix = getRotationMatrix2D(center, angle, 1.0);  // 1.0은 스케일 매개변수입니다.
 
-	nowImage = rotatedImage;
+		Mat rotatedImage;
+		warpAffine(nowImage, rotatedImage, rotMatrix, Size(width, height));
+		OpenPicture(rotatedImage);
+
+		nowImage = rotatedImage;
+	}
+	else
+		MessageBox(_T("이미지를 먼저 로드해주세요"), _T("alert"), NULL);
 }
 
 
 void CImageJ2Dlg::OnFileSave32772()
 {
 	// TODO: 여기에 명령 처리기 코드를 추가합니다.
-	imwrite(cvstr, nowImage);
+	if (!nowImage.empty()) {
+		imwrite(cvstr, nowImage);
+	}
+	else
+		MessageBox(_T("이미지를 먼저 로드해주세요"), _T("alert"), NULL);
 }
 
 
 void CImageJ2Dlg::OnFileSaveas()
 {
 	// TODO: 여기에 명령 처리기 코드를 추가합니다.
-	TCHAR szFile[] = _T("모든파일(*.*)|*.*||");
-	CString outFileName;
-	AfxExtractSubString(outFileName, pathName, 1, '.');
+	if (!nowImage.empty()) {
+		TCHAR szFile[] = _T("모든파일(*.*)|*.*||");
+		CString outFileName;
+		AfxExtractSubString(outFileName, pathName, 1, '.');
 
-	CFileDialog dlg(FALSE, NULL, '.' + outFileName, OFN_OVERWRITEPROMPT, szFile);
-	if (IDOK == dlg.DoModal())
-	{
-		CString saveFilePath = dlg.GetPathName();
-		string svstr = CT2A(saveFilePath);
-		imwrite(svstr, nowImage);
+		CFileDialog dlg(FALSE, NULL, '.' + outFileName, OFN_OVERWRITEPROMPT, szFile);
+		if (IDOK == dlg.DoModal())
+		{
+			CString saveFilePath = dlg.GetPathName();
+			string svstr = CT2A(saveFilePath);
+			imwrite(svstr, nowImage);
+		}
 	}
+	else
+		MessageBox(_T("이미지를 먼저 로드해주세요"), _T("alert"), NULL);
 }
 
 
@@ -362,19 +375,13 @@ void CImageJ2Dlg::OnEditReverse()
 }
 
 
-void CImageJ2Dlg::OnDrawLine()
-{
-	// TODO: 여기에 명령 처리기 코드를 추가합니다.
-	if (m_DrawMode != 'L')
-		m_DrawMode = 'L';
-	else
-		m_DrawMode = "";
-}
-
-
 void CImageJ2Dlg::OnLButtonDown(UINT nFlags, CPoint point)
 {
 	// TODO: 여기에 메시지 처리기 코드를 추가 및/또는 기본값을 호출합니다.
+	if (m_DrawMode == "LineDrag") {
+		nSx = point.x;
+		nSy = point.y;	}
+
 
 	CDialogEx::OnLButtonDown(nFlags, point);
 }
@@ -383,23 +390,47 @@ void CImageJ2Dlg::OnLButtonDown(UINT nFlags, CPoint point)
 void CImageJ2Dlg::OnLButtonUp(UINT nFlags, CPoint point)
 {
 	// TODO: 여기에 메시지 처리기 코드를 추가 및/또는 기본값을 호출합니다.
-	if (m_DrawMode == 'L') {
+	CClientDC dc(this);
+	CPen pEn;
+	pEn.CreatePen(PS_SOLID, 3, RGB(0, 0, 0));
+	dc.SelectObject(&pEn);
+
+	if (m_DrawMode == "LineClick") {
 		if (nClickFlag == 0) {
 			nSx = point.x;
 			nSy = point.y;
 			nClickFlag = 1;
 		}
 		else {
-			CClientDC dc(this);
-			CPen pEn;
-			pEn.CreatePen(PS_SOLID, 3, RGB(0, 0, 0));
-			dc.SelectObject(&pEn);
-
 			dc.MoveTo(nSx, nSy);
 			dc.LineTo(point.x, point.y);
 			nClickFlag = 0;
 		}
 	}
+	else if (m_DrawMode == "LineDrag") {
+		dc.MoveTo(nSx, nSy);
+		dc.LineTo(point.x, point.y);
+	}
 
 	CDialogEx::OnLButtonUp(nFlags, point);
+}
+
+
+void CImageJ2Dlg::OnLineDrag()
+{
+	// TODO: 여기에 명령 처리기 코드를 추가합니다.
+	if (m_DrawMode != "LineDrag")
+		m_DrawMode = "LineDrag";
+	else
+		m_DrawMode = "";
+}
+
+
+void CImageJ2Dlg::OnLineClicktwice()
+{
+	// TODO: 여기에 명령 처리기 코드를 추가합니다.
+	if (m_DrawMode != "LineClick")
+		m_DrawMode = "LineClick";
+	else
+		m_DrawMode = "";
 }
