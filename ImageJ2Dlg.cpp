@@ -82,6 +82,9 @@ BEGIN_MESSAGE_MAP(CImageJ2Dlg, CDialogEx)
 	ON_COMMAND(ID_EDIT_ROTATE, &CImageJ2Dlg::OnEditRotate)
 	ON_COMMAND(ID_FILE_SAVE32772, &CImageJ2Dlg::OnFileSave32772)
 	ON_COMMAND(ID_FILE_SAVEAS, &CImageJ2Dlg::OnFileSaveas)
+	ON_COMMAND(ID_FLIP_LRFILP, &CImageJ2Dlg::OnFlipLrfilp)
+	ON_COMMAND(ID_FLIP_UD, &CImageJ2Dlg::OnFlipUd)
+	ON_COMMAND(ID_EDIT_REVERSE, &CImageJ2Dlg::OnEditReverse)
 END_MESSAGE_MAP()
 
 
@@ -242,8 +245,7 @@ void CImageJ2Dlg::OnConvertcolorGrayscale()
 	// TODO: 여기에 명령 처리기 코드를 추가합니다.
 	if (!Inputimage.empty()) {
 		Mat grayImage;
-		cvtColor(Inputimage, grayImage, COLOR_BGR2GRAY);
-		//imshow(cvstr, grayImage);
+		cvtColor(nowImage, grayImage, COLOR_BGR2GRAY);
 		OpenPicture(grayImage);
 		nowImage = grayImage;
 	}
@@ -257,7 +259,7 @@ void CImageJ2Dlg::OnEditBlur()
 	// TODO: 여기에 명령 처리기 코드를 추가합니다.
 	if (!Inputimage.empty()) {
 		Mat BlurImage;
-		GaussianBlur(Inputimage, BlurImage, Size(7, 7), 0);
+		GaussianBlur(nowImage, BlurImage, Size(7, 7), 0);
 		OpenPicture(BlurImage);
 		nowImage = BlurImage;
 	}
@@ -269,8 +271,8 @@ void CImageJ2Dlg::OnEditBlur()
 void CImageJ2Dlg::OnEditRotate()
 {
 	// TODO: 여기에 명령 처리기 코드를 추가합니다.
-	int height = rImage.rows;
-	int width = rImage.cols;
+	int height = nowImage.rows;
+	int width = nowImage.cols;
 
 	// 회전 중심점 및 각도 설정
 	Point2f center(static_cast<float>(width / 2), static_cast<float>(height / 2));
@@ -280,12 +282,10 @@ void CImageJ2Dlg::OnEditRotate()
 	Mat rotMatrix = getRotationMatrix2D(center, angle, 1.0);  // 1.0은 스케일 매개변수입니다.
 
 	Mat rotatedImage;
-	warpAffine(rImage, rotatedImage, rotMatrix, Size(width, height));
+	warpAffine(nowImage, rotatedImage, rotMatrix, Size(width, height));
 	OpenPicture(rotatedImage);
 
-	rImage = rotatedImage;
-	nowImage = rImage;
-
+	nowImage = rotatedImage;
 }
 
 
@@ -310,4 +310,46 @@ void CImageJ2Dlg::OnFileSaveas()
 		string svstr = CT2A(saveFilePath);
 		imwrite(svstr, nowImage);
 	}
+}
+
+
+void CImageJ2Dlg::OnFlipLrfilp()
+{
+	// TODO: 여기에 명령 처리기 코드를 추가합니다.
+	if (!Inputimage.empty()) {
+		Mat filpImage;
+		flip(nowImage, filpImage, 1);
+		OpenPicture(filpImage);
+		nowImage = filpImage;
+	}
+	else
+		MessageBox(_T("이미지를 먼저 로드해주세요"), _T("alert"), NULL);
+}
+
+
+void CImageJ2Dlg::OnFlipUd()
+{
+	// TODO: 여기에 명령 처리기 코드를 추가합니다.
+	if (!Inputimage.empty()) {
+		Mat filpImage;
+		flip(nowImage, filpImage, 0);
+		OpenPicture(filpImage);
+		nowImage = filpImage;
+	}
+	else
+		MessageBox(_T("이미지를 먼저 로드해주세요"), _T("alert"), NULL);
+}
+
+
+void CImageJ2Dlg::OnEditReverse()
+{
+	// TODO: 여기에 명령 처리기 코드를 추가합니다.
+	if (!Inputimage.empty()) {
+		Mat notImage;
+		bitwise_not(nowImage, notImage);
+		OpenPicture(notImage);
+		nowImage = notImage;
+	}
+	else
+		MessageBox(_T("이미지를 먼저 로드해주세요"), _T("alert"), NULL);
 }

@@ -45,4 +45,7 @@ public:
 	afx_msg void OnEditRotate();
 	afx_msg void OnFileSave32772();
 	afx_msg void OnFileSaveas();
+	afx_msg void OnFlipLrfilp();
+	afx_msg void OnFlipUd();
+	afx_msg void OnEditReverse();
 };
