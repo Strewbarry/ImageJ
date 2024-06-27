@@ -61,6 +61,9 @@ END_MESSAGE_MAP()
 
 CImageJ2Dlg::CImageJ2Dlg(CWnd* pParent /*=NULL*/)
 	: CDialogEx(IDD_IMAGEJ2_DIALOG, pParent)
+	, m_DrawMode(_T(""))
+	, nSx(0)
+	, nSy(0)
 {
 	m_hIcon = AfxGetApp()->LoadIcon(IDR_MAINFRAME);
 }
@@ -85,6 +88,9 @@ BEGIN_MESSAGE_MAP(CImageJ2Dlg, CDialogEx)
 	ON_COMMAND(ID_FLIP_LRFILP, &CImageJ2Dlg::OnFlipLrfilp)
 	ON_COMMAND(ID_FLIP_UD, &CImageJ2Dlg::OnFlipUd)
 	ON_COMMAND(ID_EDIT_REVERSE, &CImageJ2Dlg::OnEditReverse)
+	ON_COMMAND(ID_DRAW_LINE, &CImageJ2Dlg::OnDrawLine)
+	ON_WM_LBUTTONDOWN()
+	ON_WM_LBUTTONUP()
 END_MESSAGE_MAP()
 
 
@@ -352,4 +358,43 @@ void CImageJ2Dlg::OnEditReverse()
 	}
 	else
 		MessageBox(_T("이미지를 먼저 로드해주세요"), _T("alert"), NULL);
+}
+
+
+void CImageJ2Dlg::OnDrawLine()
+{
+	// TODO: 여기에 명령 처리기 코드를 추가합니다.
+	if (m_DrawMode != 'L')
+		m_DrawMode = 'L';
+	else
+		m_DrawMode = "";
+}
+
+
+void CImageJ2Dlg::OnLButtonDown(UINT nFlags, CPoint point)
+{
+	// TODO: 여기에 메시지 처리기 코드를 추가 및/또는 기본값을 호출합니다.
+	if (m_DrawMode == 'L') {
+		nSx = point.x;
+		nSy = point.y;
+	}
+
+	CDialogEx::OnLButtonDown(nFlags, point);
+}
+
+
+void CImageJ2Dlg::OnLButtonUp(UINT nFlags, CPoint point)
+{
+	// TODO: 여기에 메시지 처리기 코드를 추가 및/또는 기본값을 호출합니다.
+	if (m_DrawMode == 'L') {
+		CClientDC dc(this);
+		CPen pEn;
+		pEn.CreatePen(PS_SOLID, 3, RGB(0, 0, 0));
+		dc.SelectObject(&pEn);
+
+		dc.MoveTo(nSx, nSy);
+		dc.LineTo(point.x, point.y);
+	}
+
+	CDialogEx::OnLButtonUp(nFlags, point);
 }

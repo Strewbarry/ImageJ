@@ -48,4 +48,10 @@ public:
 	afx_msg void OnFlipLrfilp();
 	afx_msg void OnFlipUd();
 	afx_msg void OnEditReverse();
+	afx_msg void OnDrawLine();
+	CString m_DrawMode;
+	afx_msg void OnLButtonDown(UINT nFlags, CPoint point);
+	afx_msg void OnLButtonUp(UINT nFlags, CPoint point);
+	int nSx;
+	int nSy;
 };
