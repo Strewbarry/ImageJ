@@ -314,18 +314,50 @@ void CImageJ2Dlg::OnFileSave32772()
 
 void CImageJ2Dlg::OnFileSaveas()
 {
-	// TODO: 여기에 명령 처리기 코드를 추가합니다.
 	if (!nowImage.empty()) {
-		TCHAR szFile[] = _T("모든파일(*.*)|*.*||");
-		CString outFileName;
-		AfxExtractSubString(outFileName, pathName, 1, '.');
+		CRect rect;
+		GetClientRect(&rect);
 
-		CFileDialog dlg(FALSE, NULL, '.' + outFileName, OFN_OVERWRITEPROMPT, szFile);
-		if (IDOK == dlg.DoModal())
-		{
-			CString saveFilePath = dlg.GetPathName();
-			string svstr = CT2A(saveFilePath);
-			imwrite(svstr, nowImage);
+		// 클라이언트 영역의 크기를 가져옵니다.
+		int width = rect.Width();
+		int height = rect.Height();
+
+		// 클라이언트 DC와 메모리 DC를 생성합니다.
+		CDC* pDC = GetDC();
+		CDC memDC;
+		memDC.CreateCompatibleDC(pDC);
+
+		// 비트맵을 생성하고 메모리 DC에 선택합니다.
+		CBitmap bmp;
+		bmp.CreateCompatibleBitmap(pDC, width, height);
+		CBitmap* pOldBmp = memDC.SelectObject(&bmp);
+
+		// 클라이언트 DC의 내용을 메모리 DC로 복사합니다.
+		memDC.BitBlt(0, 0, width, height, pDC, 0, 0, SRCCOPY);
+
+		// CImage 객체를 생성하고 비트맵을 붙여넣습니다.
+		CImage image;
+		image.Attach((HBITMAP)bmp.Detach());
+
+		// 다이얼로그 캡처 후 해제
+		memDC.SelectObject(pOldBmp);
+		ReleaseDC(pDC);
+
+		CString szFile = _T("JPEG Files(*.jpg)|*.jpg|PNG Files(*.png)|*.png|All Files(*.*)|*.*||");
+		CFileDialog fileDlg(FALSE, NULL, _T("dialog_capture"), OFN_OVERWRITEPROMPT, szFile);
+
+		if (fileDlg.DoModal() == IDOK) {
+			CString saveFilePath = fileDlg.GetPathName();
+
+			// CImage 객체를 파일로 저장
+			HRESULT hr = image.Save(saveFilePath);
+
+			if (FAILED(hr)) {
+				AfxMessageBox(_T("Error: Failed to save image!"));
+			}
+			else {
+				AfxMessageBox(_T("Image saved successfully."));
+			}
 		}
 	}
 	else
