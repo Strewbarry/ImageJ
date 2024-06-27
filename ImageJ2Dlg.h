@@ -41,4 +41,6 @@ public:
 	afx_msg void OnFileOpen32771();
 	CStatic m_PicCtrl;
 	afx_msg void OnConvertcolorGrayscale();
+	afx_msg void OnEditBlur();
+	afx_msg void OnEditRotate();
 };

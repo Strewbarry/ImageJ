@@ -19,6 +19,7 @@ CString pathName;
 string cvstr;
 Mat Inputimage;
 CImage cimage;
+Mat rImage;
 
 // 응용 프로그램 정보에 사용되는 CAboutDlg 대화 상자입니다.
 
@@ -76,6 +77,8 @@ BEGIN_MESSAGE_MAP(CImageJ2Dlg, CDialogEx)
 	ON_WM_QUERYDRAGICON()
 	ON_COMMAND(ID_FILE_OPEN32771, &CImageJ2Dlg::OnFileOpen32771)
 	ON_COMMAND(ID_CONVERTCOLOR_GRAYSCALE, &CImageJ2Dlg::OnConvertcolorGrayscale)
+	ON_COMMAND(ID_EDIT_BLUR, &CImageJ2Dlg::OnEditBlur)
+	ON_COMMAND(ID_EDIT_ROTATE, &CImageJ2Dlg::OnEditRotate)
 END_MESSAGE_MAP()
 
 
@@ -226,14 +229,56 @@ void CImageJ2Dlg::OnFileOpen32771()
 		OpenPicture(Inputimage);
 
 	}
+	rImage = Inputimage;
 }
 
 
 void CImageJ2Dlg::OnConvertcolorGrayscale()
 {
 	// TODO: 여기에 명령 처리기 코드를 추가합니다.
-	Mat grayImage;
-	cvtColor(Inputimage, grayImage, COLOR_BGR2GRAY);
-	//imshow(cvstr, grayImage);
-	OpenPicture(grayImage);
+	if (!Inputimage.empty()) {
+		Mat grayImage;
+		cvtColor(Inputimage, grayImage, COLOR_BGR2GRAY);
+		//imshow(cvstr, grayImage);
+		OpenPicture(grayImage);
+	}
+	else
+		MessageBox(_T("이미지를 먼저 로드해주세요"), _T("alert"), NULL);
+}
+
+
+void CImageJ2Dlg::OnEditBlur()
+{
+	// TODO: 여기에 명령 처리기 코드를 추가합니다.
+	if (!Inputimage.empty()) {
+		Mat BlurImage;
+		GaussianBlur(Inputimage, BlurImage, Size(7, 7), 0);
+		OpenPicture(BlurImage);
+	}
+	else
+		MessageBox(_T("이미지를 먼저 로드해주세요"), _T("alert"), NULL);
+}
+
+
+void CImageJ2Dlg::OnEditRotate()
+{
+	// TODO: 여기에 명령 처리기 코드를 추가합니다.
+	int height = rImage.rows;
+	int width = rImage.cols;
+
+	// 회전 중심점 및 각도 설정
+	Point2f center(static_cast<float>(width / 2), static_cast<float>(height / 2));
+	double angle = 90.0;  // 90도 회전
+
+	// 회전 변환 매트릭스 계산
+	Mat rotMatrix = getRotationMatrix2D(center, angle, 1.0);  // 1.0은 스케일 매개변수입니다.
+
+	Mat rotatedImage;
+	warpAffine(rImage, rotatedImage, rotMatrix, Size(width, height));
+	OpenPicture(rotatedImage);
+
+	rImage = rotatedImage;
+
+	// 회전된 이미지 저장
+	//imwrite("output_rotated.jpg", rotatedImage);
 }
