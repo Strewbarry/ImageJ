@@ -58,4 +58,8 @@ public:
 	afx_msg void OnLineClicktwice();
 	afx_msg BOOL OnMouseWheel(UINT nFlags, short zDelta, CPoint pt);
 	void ZoomImage(double scale);
+	afx_msg void OnMButtonDown(UINT nFlags, CPoint point);
+	afx_msg void OnMButtonUp(UINT nFlags, CPoint point);
+	int nPicX;
+	int nPicY;
 };

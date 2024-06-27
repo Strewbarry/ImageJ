@@ -66,6 +66,8 @@ CImageJ2Dlg::CImageJ2Dlg(CWnd* pParent /*=NULL*/)
 	, nSx(0)
 	, nSy(0)
 	, nClickFlag(false)
+	, nPicX(0)
+	, nPicY(0)
 {
 	m_hIcon = AfxGetApp()->LoadIcon(IDR_MAINFRAME);
 }
@@ -94,6 +96,8 @@ BEGIN_MESSAGE_MAP(CImageJ2Dlg, CDialogEx)
 	ON_COMMAND(ID_LINE_DRAG, &CImageJ2Dlg::OnLineDrag)
 	ON_COMMAND(ID_LINE_CLICKTWICE, &CImageJ2Dlg::OnLineClicktwice)
 	ON_WM_MOUSEWHEEL()
+	ON_WM_MBUTTONDOWN()
+	ON_WM_MBUTTONUP()
 END_MESSAGE_MAP()
 
 
@@ -224,7 +228,7 @@ void CImageJ2Dlg::OpenPicture(Mat ma){
 
 	MatToCImage(ma, cimage);
 
-	cimage.StretchBlt(dc->m_hDC, 0, 0, cimage.GetWidth(), cimage.GetWidth(), SRCCOPY);
+	cimage.StretchBlt(dc->m_hDC, nPicX, nPicY, cimage.GetWidth(), cimage.GetWidth(), SRCCOPY);
 	ReleaseDC(dc);//DC 해제
 }
 
@@ -476,6 +480,7 @@ void CImageJ2Dlg::ZoomImage(double scale)
 
 	// Display the resized image
 	OpenPicture(resizedImage);
+	nowImage = resizedImage;
 }
 
 BOOL CImageJ2Dlg::OnMouseWheel(UINT nFlags, short zDelta, CPoint pt)
@@ -483,14 +488,32 @@ BOOL CImageJ2Dlg::OnMouseWheel(UINT nFlags, short zDelta, CPoint pt)
 	// TODO: 여기에 메시지 처리기 코드를 추가 및/또는 기본값을 호출합니다.
 	if (zDelta > 0)
 	{
-		m_scale *= 1.1; // 휠 위로 스크롤하면 확대
+		m_scale *= 1.05; // 휠 위로 스크롤하면 확대
 	}
 	else
 	{
-		m_scale /= 1.1; // 휠 아래로 스크롤하면 축소
+		m_scale /= 1.05; // 휠 아래로 스크롤하면 축소
 	}
 
 	ZoomImage(m_scale);
 
 	return CDialogEx::OnMouseWheel(nFlags, zDelta, pt);
+}
+
+void CImageJ2Dlg::OnMButtonDown(UINT nFlags, CPoint point)
+{
+	// TODO: 여기에 메시지 처리기 코드를 추가 및/또는 기본값을 호출합니다.
+
+	CDialogEx::OnMButtonDown(nFlags, point);
+}
+
+
+void CImageJ2Dlg::OnMButtonUp(UINT nFlags, CPoint point)
+{
+	// TODO: 여기에 메시지 처리기 코드를 추가 및/또는 기본값을 호출합니다.
+	nPicX = point.x;
+	nPicY = point.y;
+	//OpenPicture(nowImage);
+
+	CDialogEx::OnMButtonUp(nFlags, point);
 }
