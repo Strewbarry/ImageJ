@@ -228,7 +228,8 @@ void CImageJ2Dlg::OpenPicture(Mat ma){
 
 	MatToCImage(ma, cimage);
 
-	cimage.StretchBlt(dc->m_hDC, nPicX, nPicY, cimage.GetWidth(), cimage.GetWidth(), SRCCOPY);
+	//cimage.StretchBlt(dc->m_hDC, 0, 0, cimage.GetWidth(), cimage.GetHeight(), SRCCOPY);
+	cimage.StretchBlt(dc->m_hDC, 0, 0, rect.Width(), rect.Height(), SRCCOPY);
 	ReleaseDC(dc);//DC 해제
 }
 
@@ -513,7 +514,11 @@ void CImageJ2Dlg::OnMButtonUp(UINT nFlags, CPoint point)
 	// TODO: 여기에 메시지 처리기 코드를 추가 및/또는 기본값을 호출합니다.
 	nPicX = point.x;
 	nPicY = point.y;
-	//OpenPicture(nowImage);
+	
+	Mat M = (Mat_<double>(2, 3) << 1, 0, nPicX, 0, 1, nPicY);
+	Mat moveImage;
+	warpAffine(nowImage, moveImage, M, nowImage.size());
+	OpenPicture(moveImage);
 
 	CDialogEx::OnMButtonUp(nFlags, point);
 }
