@@ -232,8 +232,6 @@ void CImageJ2Dlg::OpenPicture(Mat ma){
 	//cimage.StretchBlt(dc->m_hDC, 0, 0, cimage.GetWidth(), cimage.GetHeight(), SRCCOPY);
 	cimage.StretchBlt(dc->m_hDC, 0, 0, rect.Width(), rect.Height(), SRCCOPY);
 
-	/*CClientDC dcc(this);
-	cimage.Draw(dcc, 0, 0);*/
 
 	ReleaseDC(dc);//DC 해제
 }
@@ -265,9 +263,19 @@ void CImageJ2Dlg::OnConvertcolorGrayscale()
 	// TODO: 여기에 명령 처리기 코드를 추가합니다.
 	if (!Inputimage.empty()) {
 		Mat grayImage;
-		cvtColor(nowImage, grayImage, COLOR_BGR2GRAY);
-		OpenPicture(grayImage);
-		nowImage = grayImage;
+		cvtColor(nowImage, grayImage, COLOR_RGB2GRAY);
+		cvtColor(grayImage, nowImage, COLOR_GRAY2BGR);
+		//imshow("gray.jpg", grayImage);
+		OpenPicture(nowImage);
+		//nowImage = grayImage;
+
+		Mat binaryImage;
+		double thresh = 128; // 임계값
+		double maxval = 255; // 최대값
+		threshold(nowImage, binaryImage, thresh, maxval, cv::THRESH_BINARY);
+		//cvtColor(binaryImage, grayImage, COLOR_GRAY2BGR);
+		//OpenPicture(grayImage);
+		imshow("binaryImage.jpg", binaryImage);
 	}
 	else
 		MessageBox(_T("이미지를 먼저 로드해주세요"), _T("alert"), NULL);
@@ -511,11 +519,17 @@ BOOL CImageJ2Dlg::OnMouseWheel(UINT nFlags, short zDelta, CPoint pt)
 	// TODO: 여기에 메시지 처리기 코드를 추가 및/또는 기본값을 호출합니다.
 	if (zDelta > 0)
 	{
-		m_scale *= 1.05; // 휠 위로 스크롤하면 확대
+		if (m_scale < 1.5)
+			m_scale *= 1.05; // 휠 위로 스크롤하면 확대
+		else
+			MessageBox(_T("최대 확대입니다"), _T("alert"), NULL);
 	}
 	else
 	{
-		m_scale /= 1.05; // 휠 아래로 스크롤하면 축소
+		if (m_scale >= 0.5)
+			m_scale /= 1.05; // 휠 아래로 스크롤하면 축소
+		else
+			MessageBox(_T("더이상 축소 불가"), _T("alert"), NULL);
 	}
 
 	ZoomImage(m_scale);
