@@ -357,13 +357,30 @@ void CImageJ2Dlg::OnFileSaveas()
 		ReleaseDC(pDC);
 
 		CString szFile = _T("JPEG Files(*.jpg)|*.jpg|PNG Files(*.png)|*.png|All Files(*.*)|*.*||");
-		CFileDialog fileDlg(FALSE, NULL, _T("dialog_capture"), OFN_OVERWRITEPROMPT, szFile);
+		CString fileName = _T("SaveAs");
+		CString ext;
+		AfxExtractSubString(ext, pathName, 1, '.');
+		CFileDialog fileDlg(FALSE, NULL, fileName + '.' + ext, OFN_OVERWRITEPROMPT, szFile);
 
 		if (fileDlg.DoModal() == IDOK) {
 			CString saveFilePath = fileDlg.GetPathName();
+			
+			GUID fileType;
+			if (ext == _T("jpg"))
+				fileType = Gdiplus::ImageFormatJPEG;
+			else if (ext == _T("png"))
+				fileType = Gdiplus::ImageFormatPNG;
+			else if (ext == _T("bmp"))
+				fileType = Gdiplus::ImageFormatBMP;
+			else if (ext == _T("gif"))
+				fileType = Gdiplus::ImageFormatGIF;
+			else {
+				AfxMessageBox(_T("Unsupported file format!"));
+				return;
+			}
 
 			// CImage 객체를 파일로 저장
-			HRESULT hr = image.Save(saveFilePath);
+			HRESULT hr = image.Save(saveFilePath, fileType);
 
 			if (FAILED(hr)) {
 				AfxMessageBox(_T("Error: Failed to save image!"));
@@ -537,7 +554,7 @@ void CImageJ2Dlg::OnHistogramShowhis()
 	int hist_h = 800; // 히스토그램 높이
 	int bin_w = cvRound((double)hist_w / histSize);
 
-	Mat histImage(hist_h, hist_w, CV_8UC3, Scalar(0, 0, 0));
+	Mat histImage(hist_h, hist_w, CV_8UC3, Scalar(255, 255, 255));
 
 	// B, G, R 채널 분리
 	vector<Mat> bgr_planes;

@@ -44,6 +44,7 @@ public:
 	afx_msg void OnEditBlur();
 	afx_msg void OnEditRotate();
 	afx_msg void OnFileSave32772();
+	int GetEncoderClsid(const WCHAR * format, CLSID * pClsid);
 	afx_msg void OnFileSaveas();
 	afx_msg void OnFlipLrfilp();
 	afx_msg void OnFlipUd();
