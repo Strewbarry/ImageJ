@@ -63,4 +63,7 @@ public:
 	int nPicX;
 	int nPicY;
 	afx_msg void OnHistogramShowhis();
+	int his_arr_r[256];
+	int his_arr_g[256];
+	int his_arr_b[256];
 };

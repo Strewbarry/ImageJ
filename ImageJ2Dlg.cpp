@@ -229,8 +229,8 @@ void CImageJ2Dlg::OpenPicture(Mat ma){
 
 	MatToCImage(ma, cimage);
 
-	cimage.StretchBlt(dc->m_hDC, 0, 0, cimage.GetWidth(), cimage.GetHeight(), SRCCOPY);
-	//cimage.StretchBlt(dc->m_hDC, 0, 0, rect.Width(), rect.Height(), SRCCOPY);
+	//cimage.StretchBlt(dc->m_hDC, 0, 0, cimage.GetWidth(), cimage.GetHeight(), SRCCOPY);
+	cimage.StretchBlt(dc->m_hDC, 0, 0, rect.Width(), rect.Height(), SRCCOPY);
 
 	/*CClientDC dcc(this);
 	cimage.Draw(dcc, 0, 0);*/
@@ -532,5 +532,48 @@ void CImageJ2Dlg::OnMButtonUp(UINT nFlags, CPoint point)
 void CImageJ2Dlg::OnHistogramShowhis()
 {
 	// TODO: 여기에 명령 처리기 코드를 추가합니다.
-	
+	int histSize = 256;
+	int hist_w = 800; // 히스토그램 너비
+	int hist_h = 800; // 히스토그램 높이
+	int bin_w = cvRound((double)hist_w / histSize);
+
+	Mat histImage(hist_h, hist_w, CV_8UC3, Scalar(0, 0, 0));
+
+	// B, G, R 채널 분리
+	vector<Mat> bgr_planes;
+	split(nowImage, bgr_planes);
+
+	// 히스토그램 설정
+	float range[] = { 0, 256 };
+	const float* histRange = { range };
+	bool uniform = true, accumulate = false;
+
+	Mat b_hist, g_hist, r_hist;
+
+	// 각 채널의 히스토그램 계산
+	calcHist(&bgr_planes[0], 1, 0, Mat(), b_hist, 1, &histSize, &histRange, uniform, accumulate);
+	calcHist(&bgr_planes[1], 1, 0, Mat(), g_hist, 1, &histSize, &histRange, uniform, accumulate);
+	calcHist(&bgr_planes[2], 1, 0, Mat(), r_hist, 1, &histSize, &histRange, uniform, accumulate);
+
+	// 히스토그램 정규화
+	normalize(b_hist, b_hist, 0, histImage.rows, NORM_MINMAX, -1, Mat());
+	normalize(g_hist, g_hist, 0, histImage.rows, NORM_MINMAX, -1, Mat());
+	normalize(r_hist, r_hist, 0, histImage.rows, NORM_MINMAX, -1, Mat());
+
+	// 히스토그램 그리기
+	for (int i = 1; i < histSize; i++)
+	{
+		line(histImage, Point(bin_w * (i - 1), hist_h - cvRound(b_hist.at<float>(i - 1))),
+			Point(bin_w * (i), hist_h - cvRound(b_hist.at<float>(i))),
+			Scalar(255, 0, 0), 2, 8, 0);
+		line(histImage, Point(bin_w * (i - 1), hist_h - cvRound(g_hist.at<float>(i - 1))),
+			Point(bin_w * (i), hist_h - cvRound(g_hist.at<float>(i))),
+			Scalar(0, 255, 0), 2, 8, 0);
+		line(histImage, Point(bin_w * (i - 1), hist_h - cvRound(r_hist.at<float>(i - 1))),
+			Point(bin_w * (i), hist_h - cvRound(r_hist.at<float>(i))),
+			Scalar(0, 0, 255), 2, 8, 0);
+	}
+
+	// 히스토그램 이미지 표시
+	imshow("Histogram", histImage);
 }
