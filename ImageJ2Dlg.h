@@ -62,4 +62,5 @@ public:
 	afx_msg void OnMButtonUp(UINT nFlags, CPoint point);
 	int nPicX;
 	int nPicY;
+	afx_msg void OnHistogramShowhis();
 };

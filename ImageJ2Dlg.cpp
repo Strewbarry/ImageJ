@@ -98,6 +98,7 @@ BEGIN_MESSAGE_MAP(CImageJ2Dlg, CDialogEx)
 	ON_WM_MOUSEWHEEL()
 	ON_WM_MBUTTONDOWN()
 	ON_WM_MBUTTONUP()
+	ON_COMMAND(ID_HISTOGRAM_SHOWHIS, &CImageJ2Dlg::OnHistogramShowhis)
 END_MESSAGE_MAP()
 
 
@@ -228,8 +229,12 @@ void CImageJ2Dlg::OpenPicture(Mat ma){
 
 	MatToCImage(ma, cimage);
 
-	//cimage.StretchBlt(dc->m_hDC, 0, 0, cimage.GetWidth(), cimage.GetHeight(), SRCCOPY);
-	cimage.StretchBlt(dc->m_hDC, 0, 0, rect.Width(), rect.Height(), SRCCOPY);
+	cimage.StretchBlt(dc->m_hDC, 0, 0, cimage.GetWidth(), cimage.GetHeight(), SRCCOPY);
+	//cimage.StretchBlt(dc->m_hDC, 0, 0, rect.Width(), rect.Height(), SRCCOPY);
+
+	/*CClientDC dcc(this);
+	cimage.Draw(dcc, 0, 0);*/
+
 	ReleaseDC(dc);//DC 해제
 }
 
@@ -504,6 +509,14 @@ BOOL CImageJ2Dlg::OnMouseWheel(UINT nFlags, short zDelta, CPoint pt)
 void CImageJ2Dlg::OnMButtonDown(UINT nFlags, CPoint point)
 {
 	// TODO: 여기에 메시지 처리기 코드를 추가 및/또는 기본값을 호출합니다.
+	nPicX = point.x;
+	nPicY = point.y;
+
+	Mat M = (Mat_<double>(2, 3) << 1, 0, nPicX, 0, 1, nPicY);
+	Mat moveImage;
+	warpAffine(nowImage, moveImage, M, nowImage.size());
+	OpenPicture(moveImage);
+
 
 	CDialogEx::OnMButtonDown(nFlags, point);
 }
@@ -512,13 +525,12 @@ void CImageJ2Dlg::OnMButtonDown(UINT nFlags, CPoint point)
 void CImageJ2Dlg::OnMButtonUp(UINT nFlags, CPoint point)
 {
 	// TODO: 여기에 메시지 처리기 코드를 추가 및/또는 기본값을 호출합니다.
-	nPicX = point.x;
-	nPicY = point.y;
-	
-	Mat M = (Mat_<double>(2, 3) << 1, 0, nPicX, 0, 1, nPicY);
-	Mat moveImage;
-	warpAffine(nowImage, moveImage, M, nowImage.size());
-	OpenPicture(moveImage);
-
 	CDialogEx::OnMButtonUp(nFlags, point);
+}
+
+
+void CImageJ2Dlg::OnHistogramShowhis()
+{
+	// TODO: 여기에 명령 처리기 코드를 추가합니다.
+	
 }
