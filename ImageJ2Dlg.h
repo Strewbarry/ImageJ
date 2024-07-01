@@ -61,10 +61,13 @@ public:
 	void ZoomImage(double scale);
 	afx_msg void OnMButtonDown(UINT nFlags, CPoint point);
 	afx_msg void OnMButtonUp(UINT nFlags, CPoint point);
+	void OpenHisto(cv::Mat ma);
 	int nPicX;
 	int nPicY;
 	afx_msg void OnHistogramShowhis();
 	int his_arr_r[256];
 	int his_arr_g[256];
 	int his_arr_b[256];
+	afx_msg void OnBnClickedButtStrech();
+	CStatic m_HistoCtrl;
 };

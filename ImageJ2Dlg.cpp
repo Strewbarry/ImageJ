@@ -76,6 +76,7 @@ void CImageJ2Dlg::DoDataExchange(CDataExchange* pDX)
 {
 	CDialogEx::DoDataExchange(pDX);
 	DDX_Control(pDX, IDC_PICTURE, m_PicCtrl);
+	DDX_Control(pDX, IDC_HISTO, m_HistoCtrl);
 }
 
 BEGIN_MESSAGE_MAP(CImageJ2Dlg, CDialogEx)
@@ -99,6 +100,7 @@ BEGIN_MESSAGE_MAP(CImageJ2Dlg, CDialogEx)
 	ON_WM_MBUTTONDOWN()
 	ON_WM_MBUTTONUP()
 	ON_COMMAND(ID_HISTOGRAM_SHOWHIS, &CImageJ2Dlg::OnHistogramShowhis)
+	ON_BN_CLICKED(IDC_BUTT_STRECH, &CImageJ2Dlg::OnBnClickedButtStrech)
 END_MESSAGE_MAP()
 
 
@@ -559,6 +561,20 @@ void CImageJ2Dlg::OnMButtonUp(UINT nFlags, CPoint point)
 	CDialogEx::OnMButtonUp(nFlags, point);
 }
 
+void CImageJ2Dlg::OpenHisto(Mat ma) {
+	CRect rect2;//픽쳐 컨트롤의 크기를 저장할 CRect 객체
+	m_HistoCtrl.GetWindowRect(rect2);//GetWindowRect를 사용해서 픽쳐 컨트롤의 크기를 받는다.
+	CDC* dc2; //픽쳐 컨트롤의 DC를 가져올  CDC 포인터
+	dc2 = m_HistoCtrl.GetDC(); //픽쳐 컨트롤의 DC를 얻는다.
+
+	MatToCImage(ma, cimage);
+
+	//cimage.StretchBlt(dc->m_hDC, 0, 0, cimage.GetWidth(), cimage.GetHeight(), SRCCOPY);
+	cimage.StretchBlt(dc2->m_hDC, 0, 0, rect2.Width(), rect2.Height(), SRCCOPY);
+
+
+	ReleaseDC(dc2);//DC 해제
+}
 
 void CImageJ2Dlg::OnHistogramShowhis()
 {
@@ -606,5 +622,23 @@ void CImageJ2Dlg::OnHistogramShowhis()
 	}
 
 	// 히스토그램 이미지 표시
-	imshow("Histogram", histImage);
+	//imshow("Histogram", histImage);
+	OpenHisto(histImage);
+}
+
+
+void CImageJ2Dlg::OnBnClickedButtStrech()
+{
+	// TODO: 여기에 컨트롤 알림 처리기 코드를 추가합니다.
+	Mat strchImage;
+
+	double minVal, maxVal;
+	minMaxLoc(nowImage, &minVal, &maxVal);
+
+	// 히스토그램 스트래칭
+	strchImage = (nowImage - minVal) * (255.0 / (maxVal - minVal));
+
+	OpenPicture(strchImage);
+	nowImage = strchImage;
+	OnHistogramShowhis();
 }
