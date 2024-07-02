@@ -68,6 +68,7 @@ CImageJ2Dlg::CImageJ2Dlg(CWnd* pParent /*=NULL*/)
 	, nClickFlag(false)
 	, nPicX(0)
 	, nPicY(0)
+	, m_Shold(_T(""))
 {
 	m_hIcon = AfxGetApp()->LoadIcon(IDR_MAINFRAME);
 }
@@ -77,6 +78,7 @@ void CImageJ2Dlg::DoDataExchange(CDataExchange* pDX)
 	CDialogEx::DoDataExchange(pDX);
 	DDX_Control(pDX, IDC_PICTURE, m_PicCtrl);
 	DDX_Control(pDX, IDC_HISTO, m_HistoCtrl);
+	DDX_Text(pDX, IDC_SHOLD, m_Shold);
 }
 
 BEGIN_MESSAGE_MAP(CImageJ2Dlg, CDialogEx)
@@ -101,6 +103,7 @@ BEGIN_MESSAGE_MAP(CImageJ2Dlg, CDialogEx)
 	ON_WM_MBUTTONUP()
 	ON_COMMAND(ID_HISTOGRAM_SHOWHIS, &CImageJ2Dlg::OnHistogramShowhis)
 	ON_BN_CLICKED(IDC_BUTT_STRECH, &CImageJ2Dlg::OnBnClickedButtStrech)
+	ON_BN_CLICKED(IDC_BUTT_SHOLD, &CImageJ2Dlg::OnBnClickedButtShold)
 END_MESSAGE_MAP()
 
 
@@ -630,15 +633,70 @@ void CImageJ2Dlg::OnHistogramShowhis()
 void CImageJ2Dlg::OnBnClickedButtStrech()
 {
 	// TODO: 여기에 컨트롤 알림 처리기 코드를 추가합니다.
-	Mat strchImage;
+	//Mat strchImage;
 
-	double minVal, maxVal;
-	minMaxLoc(nowImage, &minVal, &maxVal);
+	//double minVal, maxVal;
+	//minMaxLoc(nowImage, &minVal, &maxVal);
 
-	// 히스토그램 스트래칭
-	strchImage = (nowImage - minVal) * (255.0 / (maxVal - minVal));
+	//// 히스토그램 스트래칭
+	//strchImage = (nowImage - minVal) * (255.0 / (maxVal - minVal));
 
-	OpenPicture(strchImage);
-	nowImage = strchImage;
+	//OpenPicture(strchImage);
+
+	//nowImage = strchImage;
+	//OnHistogramShowhis();
+	////=======================================
+
+	vector<int> hist(256, 0);
+	for (int i = 0; i < nowImage.rows; ++i)
+	{
+		for (int j = 0; j < nowImage.cols; ++j)
+		{
+			hist[nowImage.at<uchar>(i, j)]++;
+		}
+	}
+
+	// 최대 픽셀 갯수 찾기
+	int max_pixel_count = *max_element(hist.begin(), hist.end());
+	int threshold = static_cast<int>(max_pixel_count * 0.01);
+	if (m_Shold != "") {
+		CT2CA psz(m_Shold);
+		threshold = atoi(psz);
+	}
+
+	// 히스토그램에서 5% 미만의 픽셀 갯수를 무시하고 시작 및 종료 지점을 찾기
+	int start = 0;
+	while (hist[start] < threshold)
+	{
+		++start;
+	}
+
+	int end = 255;
+	while (hist[end] < threshold)
+	{
+		--end;
+	}
+
+	// 히스토그램 스트래칭 적용
+	Mat dst = nowImage.clone();
+	for (int i = 0; i < nowImage.rows; ++i)
+	{
+		for (int j = 0; j < nowImage.cols; ++j)
+		{
+			int pixel_value = nowImage.at<uchar>(i, j);
+			int stretched_value = (pixel_value - start) * 255 / (end - start);
+			stretched_value = max(0, min(255, stretched_value)); // 값을 0-255 범위로 제한
+			dst.at<uchar>(i, j) = stretched_value;
+		}
+	}
+	OpenPicture(dst);
+	nowImage = dst;
 	OnHistogramShowhis();
+}
+
+
+void CImageJ2Dlg::OnBnClickedButtShold()
+{
+	// TODO: 여기에 컨트롤 알림 처리기 코드를 추가합니다.
+	UpdateData(true);
 }

@@ -70,4 +70,6 @@ public:
 	int his_arr_b[256];
 	afx_msg void OnBnClickedButtStrech();
 	CStatic m_HistoCtrl;
+	CString m_Shold;
+	afx_msg void OnBnClickedButtShold();
 };
